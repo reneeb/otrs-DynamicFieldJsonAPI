@@ -1,0 +1,232 @@
+# --
+# AdminDynamicFieldJsonAPI.tt - provides HTML form for AdminDynamicFieldsJsonAPI
+# Copyright (C) 2015 Perl-Services.de, http://perl-services.de
+# --
+# This software comes with ABSOLUTELY NO WARRANTY. For details, see
+# the enclosed file COPYING for license information (AGPL). If you
+# did not receive this file, see http://www.gnu.org/licenses/agpl.txt.
+# --
+
+<div class="MainBox ARIARoleMain LayoutFixedSidebar SidebarFirst">
+    <h1>[% Translate("Dynamic Fields") | html %] - [% Translate(Data.ObjectTypeName) | html %]: [% Translate(Data.Mode) | html %] [% Translate(Data.FieldTypeName) | html %] [% Translate("Field") | html %]</h1>
+
+    <div class="Clear"></div>
+
+    <div class="SidebarColumn">
+        <div class="WidgetSimple">
+            <div class="Header">
+                <h2>[% Translate("Actions") | html %]</h2>
+            </div>
+            <div class="Content">
+                <ul class="ActionList">
+                    <li>
+                        <a href="[% Env("Baselink") %]Action=AdminDynamicField" class="CallForAction Fullsize Center"><span><i class="fa fa-caret-left"></i>[% Translate("Go back to overview") | html %]</span></a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="ContentColumn">
+        <form action="[% Env("CGIHandle") %]" method="post" class="Validate PreventMultipleSubmits">
+            <input type="hidden" name="Action" value="AdminDynamicFieldJsonAPI" />
+            <input type="hidden" name="Subaction" value="[% Data.Mode | html %]Action" />
+            <input type="hidden" name="ObjectType" value="[% Data.ObjectType | html %]" />
+            <input type="hidden" name="FieldType" value="[% Data.FieldType | html %]" />
+            <input type="hidden" name="ID" value="[% Data.ID | html %]" />
+
+            <div class="WidgetSimple">
+                <div class="Header">
+                    <h2>[% Translate("General") | html %]</h2>
+                </div>
+                <div class="Content">
+                    <div class="LayoutGrid ColumnsWithSpacing">
+                        <div class="Size1of2">
+                            <fieldset class="TableLike">
+                                <label class="Mandatory" for="Name"><span class="Marker">*</span> [% Translate("Name") | html %]:</label>
+                                <div class="Field">
+                                    <input id="Name" class="W50pc [% Data.NameServerError | html %] [% Data.ShowWarning | html %]  Validate_Alphanumeric" type="text" maxlength="200" value="[% Data.Name | html %]" name="Name" [% Data.ReadonlyInternalField | html %] />
+                                    <div id="NameError" class="TooltipErrorMessage"><p>[% Translate("This field is required, and the value should be alphabetic and numeric characters only.") | html %]</p></div>
+                                    <div id="NameServerError" class="TooltipErrorMessage"><p>[% Translate(Data.NameServerErrorMessage) | html %]</p></div>
+                                    <p class="FieldExplanation">[% Translate("Must be unique and only accept alphabetic and numeric characters.") | html %]</p>
+                                    <p class="Warning Hidden">[% Translate("Changing this value will require manual changes in the system.") | html %]</p>
+                                </div>
+                                <div class="Clear"></div>
+
+                                <label class="Mandatory" for="Label"><span class="Marker">*</span> [% Translate("Label") | html %]:</label>
+                                <div class="Field">
+                                    <input id="Label" class="W50pc [% Data.LabelServerError | html %] Validate_Required" type="text" maxlength="200" value="[% Data.Label | html %]" name="Label"/>
+                                    <div id="LabelError" class="TooltipErrorMessage"><p>[% Translate("This field is required.") | html %]</p></div>
+                                    <div id="LabelServerError" class="TooltipErrorMessage"><p>[% Translate(Data.LabelServerErrorMessage) | html %]</p></div>
+                                    <p class="FieldExplanation">[% Translate("This is the name to be shown on the screens where the field is active.") | html %]</p>
+                                </div>
+                                <div class="Clear"></div>
+
+                                <label class="Mandatory" for="FieldOrder"><span class="Marker">*</span> [% Translate("Field order") | html %]:</label>
+                                <div class="Field">
+                                    [% Data.DynamicFieldOrderStrg %]
+                                    <div id="FieldOrderError" class="TooltipErrorMessage"><p>[% Translate("This field is required and must be numeric.") | html %]</p></div>
+                                    <div id="FieldOrderServerError" class="TooltipErrorMessage"><p>[% Translate(Data.FieldOrderServerErrorMessage) | html %]</p></div>
+                                    <p class="FieldExplanation">[% Translate("This is the order in which this field will be shown on the screens where is active.") | html %]</p>
+                                </div>
+                                <div class="Clear"></div>
+                            </fieldset>
+                        </div>
+                        <div class="Size1of2">
+                            <fieldset class="TableLike">
+                                <label for="ValidID">[% Translate("Validity") | html %]:</label>
+                                <div class="Field">
+                                    [% Data.ValidityStrg %]
+                                </div>
+                                <div class="Clear"></div>
+
+                                <div class="SpacingTop"></div>
+                                <label for="FieldTypeName">[% Translate("Field type") | html %]:</label>
+                                <div class="Field">
+                                    <input id="FieldTypeName" readonly class="W50pc" type="text" maxlength="200" value="[% Translate(Data.FieldTypeName) | html %]" name="FieldTypeName"/>
+                                    <div class="Clear"></div>
+                                </div>
+
+                                <div class="SpacingTop"></div>
+                                <label for="ObjectTypeName">[% Translate("Object type") | html %]:</label>
+                                <div class="Field">
+                                    <input id="ObjectTypeName" readonly class="W50pc" type="text" maxlength="200" value="[% Translate(Data.ObjectTypeName) | html %]" name="ObjectTypeName"/>
+                                    <div class="Clear"></div>
+                                </div>
+
+[% RenderBlockStart("InternalField") %]
+                                <div class="SpacingTop"></div>
+                                <label for="InternalField">[% Translate("Internal field") | html %]:</label>
+                                <div class="Field">
+                                    <input id="InternalField" readonly class="W50pc" type="text" maxlength="1" value="[% Data.InternalField | html %]" name="InternalField"/>
+                                    <p class="FieldExplanation">
+                                        [% Translate("This field is protected and can't be deleted.") | html %]
+                                    </p>
+                                    <div class="Clear"></div>
+                                </div>
+[% RenderBlockEnd("InternalField") %]
+                            </fieldset>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="WidgetSimple">
+                <div class="Header">
+                    <h2>[% Translate(Data.FieldTypeName) | html %] [% Translate("Field Settings") | html %]</h2>
+                </div>
+                <div class="Content">
+                    <fieldset class="TableLike">
+                        <label for="URL" class="Mandatory"><span class="Marker">*</span>[% Translate("URL") | html %]:</label>
+                        <div class="Field">
+                            <input id="URL" class="W50pc" type="text" maxlength="500" value="[% Data.URL | html %]" name="URL"/>
+                            <div id="URLError" class="TooltipErrorMessage"><p>[% Translate("This field is required") | html %]</p></div>
+                            <div id="URLServerError" class="TooltipErrorMessage"><p>[% Translate(Data.URLServerErrorMessage) | html %]</p></div>
+                            <p class="FieldExplanation">
+                                [% Translate("This is the API endpoint URL.") | html %]
+                                <br/>
+                                [% Translate("Example") | html %]: http://some.example.com/api/v0/tickets</span>
+                            </p>
+                        </div>
+                        <div class="Clear"></div>
+
+                        <label for="User">[% Translate("User") | html %]:</label>
+                        <div class="Field">
+                            <input id="User" class="W50pc" type="text" maxlength="500" value="[% Data.User | html %]" name="User"/>
+                            <p class="FieldExplanation">
+                                [% Translate("This is the API user. Needed when the API is available only for authenticated users.") | html %]
+                            </p>
+                        </div>
+                        <div class="Clear"></div>
+
+                        <label for="Password/Token">[% Translate("Password/Token") | html %]:</label>
+                        <div class="Field">
+                            <input id="PasswordToken" class="W50pc" type="text" maxlength="500" value="[% Data.PasswordToken | html %]" name="PasswordToken"/>
+                            <p class="FieldExplanation">
+                                [% Translate("This is the password for the API user. Needed when the API is available only for authenticated users.") | html %]
+                            </p>
+                        </div>
+                        <div class="Clear"></div>
+
+                        <label for="JSONPathKey" class="Mandatory"><span class="Marker">*</span>[% Translate("JSONPath (Key)") | html %]:</label>
+                        <div class="Field">
+                            <input id="JSONPathKey" class="W50pc" type="text" maxlength="500" value="[% Data.JSONPathKey | html %]" name="JSONPathKey"/>
+                            <div id="JSONPathKeyError" class="TooltipErrorMessage"><p>[% Translate("This field is required") | html %]</p></div>
+                            <div id="JSONPathKeyServerError" class="TooltipErrorMessage"><p>[% Translate(Data.JSONPathKeyServerErrorMessage) | html %]</p></div>
+                            <p class="FieldExplanation">
+                                [% Translate("This is the JSONPath for the key.") | html %]
+                                <br/>
+                                [% Translate("Example") | html %]: /hits/tickets/*/ticket_id
+                            </p>
+                        </div>
+                        <div class="Clear"></div>
+
+                        <label for="JSONPathValue">[% Translate("JSONPath (Value)") | html %]:</label>
+                        <div class="Field">
+                            <input id="JSONPathValue" class="W50pc" type="text" maxlength="500" value="[% Data.JSONPathValue | html %]" name="JSONPathValue"/>
+                            <p class="FieldExplanation">
+                                [% Translate("This is the JSONPath for the value. Only needed if key and value are distinct.") | html %]
+                                <br/>
+                                [% Translate("Example") | html %]: /hits/tickets/*/ticket_number
+                            </p>
+                        </div>
+                        <div class="Clear"></div>
+
+                        <label for="Requestbody">[% Translate("Requestbody") | html %]:</label>
+                        <div class="Field">
+                            <textarea id="Requestbody" class="W50pc" name="Requestbody" rows="3" cols="80">[% Data.Requestbody | html %]</textarea>
+                            <p class="FieldExplanation">
+                                [% Translate("Sometimes you need a payload to send with the request") | html %]
+                                <br/>
+                                [% Translate("Example") | html %]: {"query":{"dist":"test"}}</span>
+                            </p>
+                        </div>
+                        <div class="Clear"></div>
+
+                        <label for="HTTPMethod">[% Translate("HTTP Method") | html %]:</label>
+                        <div class="Field">
+                            [% Data.HTTPMethod %]
+                        </div>
+                        <div class="Clear"></div>
+
+                        <label for="TTLCache">[% Translate("TTL (Cache)") | html %]:</label>
+                        <div class="Field">
+                            <input id="TTLCache" class="W50pc" type="text" maxlength="500" value="[% Data.TTLCache | html %]" name="TTLCache"/>
+                            <p class="FieldExplanation">
+                                [% Translate("Minutes the found data should be cached") | html %]
+                            </p>
+                        </div>
+                        <div class="Clear"></div>
+
+                        <label for="Link">[% Translate("Show link") | html %]:</label>
+                        <div class="Field">
+                            <input id="Link" class="W50pc" type="text" maxlength="500" value="[% Data.Link | html %]" name="Link"/>
+                            <p class="FieldExplanation">
+                                [% Translate("Here you can specify an optional HTTP link for the field value in Overviews and Zoom screens.") | html %]
+                                <br/>
+                                [% Translate("Example") | html %]: http://some.example.com/handle?query=<span>[</span>% Data.Field1 | uri %<span>]</span>
+                            </p>
+                        </div>
+                        <div class="Clear"></div>
+                    </fieldset>
+                </div>
+            </div>
+            <fieldset class="TableLike">
+                <div class="Field SpacingTop">
+                    <button type="submit" class="Primary CallForAction" value="[% Translate("Submit") | html %]"><span>[% Translate("Submit") | html %]</span></button>
+                    [% Translate("or") | html %]
+                    <a href="[% Env("Baselink") %]Action=AdminDynamicField">[% Translate("Cancel") | html %]</a>
+                </div>
+                <div class="Clear"></div>
+            </fieldset>
+        </form>
+    </div>
+</div>
+[% WRAPPER JSOnDocumentComplete %]
+<script type="text/javascript">//<![CDATA[
+$('.ShowWarning').bind('change keyup', function (Event) {
+    $('p.Warning').removeClass('Hidden');
+});
+
+Core.Agent.Admin.DynamicField.ValidationInit();
+//]]></script>
+[% END %]
