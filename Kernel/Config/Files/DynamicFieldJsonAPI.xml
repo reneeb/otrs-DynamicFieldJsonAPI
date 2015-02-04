@@ -29,4 +29,16 @@
             </Hash>
         </Setting>
     </ConfigItem>
+    <ConfigItem Name="PublicFrontend::Module###PublicDeleteDFCache" Required="0" Valid="0">
+        <Description Translatable="1">Frontend module registration to delete a dynamic field cache.</Description>
+        <Group>DynamicFieldJsonAPI</Group>
+        <SubGroup>Frontend::Public::ModuleRegistration</SubGroup>
+        <Setting>
+            <FrontendModuleReg>
+                <Description>Delete DynamicField Cache</Description>
+                <NavBarName></NavBarName>
+                <Title>Delete DynamicField Cache</Title>
+            </FrontendModuleReg>
+        </Setting>
+    </ConfigItem>
 </otrs_config>
