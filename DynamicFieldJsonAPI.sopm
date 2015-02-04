@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<otrs_package version="1.0">
+    <!-- GENERATED WITH OTRS::OPM::Maker::Command::sopm (1.28) -->
+    <Name>DynamicFieldJsonAPI</Name>
+    <Version>4.0.1</Version>
+    <Framework>4.0.x</Framework>
+    <ModuleRequired Version="0.205">JSON::Path</ModuleRequired>
+    <ModuleRequired Version="3.13">MIME::Base64</ModuleRequired>
+    <Vendor>Perl-Services.de</Vendor>
+    <URL>http://www.perl-services.de</URL>
+    <Description Lang="de">Verwende eine JSON-API als Backend für Dynamische Felder</Description>
+    <Description Lang="en">Use a JSON API as a DynamicField backend</Description>
+    <License>GNU AFFERO GENERAL PUBLIC LICENSE Version 3, November 2007</License>
+    <Filelist>
+        <File Permission="644" Location="Custom/Kernel/Modules/AdminDynamicFieldJsonAPI.pm" />
+        <File Permission="644" Location="Custom/Kernel/Modules/PublicDeleteDFCache.pm" />
+        <File Permission="644" Location="Custom/Kernel/Output/HTML/Standard/AdminDynamicFieldJsonAPI.tt" />
+        <File Permission="644" Location="Custom/Kernel/System/DynamicField/Driver/BaseJsonAPI.pm" />
+        <File Permission="644" Location="Custom/Kernel/System/DynamicField/Driver/JsonAPI.pm" />
+        <File Permission="644" Location="Kernel/Config/Files/DynamicFieldJsonAPI.xml" />
+        <File Permission="644" Location="doc/DynamicFieldJsonAPI.json" />
+    </Filelist>
+</otrs_package>

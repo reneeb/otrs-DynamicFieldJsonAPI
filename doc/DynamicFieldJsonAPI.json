@@ -1,5 +1,5 @@
 {
-    "name": "ShowCustomerCIInfo",
+    "name": "DynamicFieldJsonAPI",
     "version": "4.0.1",
     "framework": [
         "4.0.x"
