@@ -118,7 +118,7 @@
                     <fieldset class="TableLike">
                         <label for="URL" class="Mandatory"><span class="Marker">*</span>[% Translate("URL") | html %]:</label>
                         <div class="Field">
-                            <input id="URL" class="W50pc" type="text" maxlength="500" value="[% Data.URL | html %]" name="URL"/>
+                            <input id="URL" class="W50pc Validate_Required" type="text" maxlength="500" value="[% Data.URL | html %]" name="URL"/>
                             <div id="URLError" class="TooltipErrorMessage"><p>[% Translate("This field is required") | html %]</p></div>
                             <div id="URLServerError" class="TooltipErrorMessage"><p>[% Translate(Data.URLServerErrorMessage) | html %]</p></div>
                             <p class="FieldExplanation">
@@ -149,7 +149,7 @@
 
                         <label for="JSONPathKey" class="Mandatory"><span class="Marker">*</span>[% Translate("JSONPath (Key)") | html %]:</label>
                         <div class="Field">
-                            <input id="JSONPathKey" class="W50pc" type="text" maxlength="500" value="[% Data.JSONPathKey | html %]" name="JSONPathKey"/>
+                            <input id="JSONPathKey" class="W50pc Validate_Required" type="text" maxlength="500" value="[% Data.JSONPathKey | html %]" name="JSONPathKey"/>
                             <div id="JSONPathKeyError" class="TooltipErrorMessage"><p>[% Translate("This field is required") | html %]</p></div>
                             <div id="JSONPathKeyServerError" class="TooltipErrorMessage"><p>[% Translate(Data.JSONPathKeyServerErrorMessage) | html %]</p></div>
                             <p class="FieldExplanation">
@@ -184,7 +184,7 @@
 
                         <label for="HTTPMethod">[% Translate("HTTP Method") | html %]:</label>
                         <div class="Field">
-                            [% Data.HTTPMethod %]
+                            [% Data.HTTPMethodSelect %]
                         </div>
                         <div class="Clear"></div>
 

@@ -12,26 +12,26 @@ package Kernel::System::DynamicField::Driver::BaseJsonAPI;
 use strict;
 use warnings;
 
+use List::Util qw(first);
+use MIME::Base64 qw(encode_base64);
+use JSON::Path;
+
 use Kernel::System::VariableCheck qw(:all);
 
 use base qw(Kernel::System::DynamicField::Driver::Base);
 
-our @ObjectDependencies = (
-    'Kernel::System::DB',
-    'Kernel::System::DynamicFieldValue',
-    'Kernel::System::Ticket::ColumnFilter',
-    'Kernel::System::Log',
+our @ObjectDependencies = qw(
+    Kernel::System::DB
+    Kernel::System::DynamicFieldValue
+    Kernel::System::Ticket::ColumnFilter
+    Kernel::System::Log
+    Kernel::System::WebUserAgent
 );
 
 =head1 NAME
 
-Kernel::System::DynamicField::Driver::BaseSelect - sub module of
-Kernel::System::DynamicField::Driver::Dropdown and
-Kernel::System::DynamicField::Driver::Multiselect
+Kernel::System::DynamicField::Driver::BaseJsonAPI
 
-=head1 SYNOPSIS
-
-Date common functions.
 
 =head1 PUBLIC INTERFACE
 
@@ -57,8 +57,10 @@ sub ValueGet {
 sub ValueSet {
     my ( $Self, %Param ) = @_;
 
+    my $PossibleValues = $Self->PossibleValuesGet();
+
     # check for valid possible values list
-    if ( !$Param{DynamicFieldConfig}->{Config}->{PossibleValues} ) {
+    if ( !$PossibleValues->{ $Param{Value} } ) {
         $Kernel::OM->Get('Kernel::System::Log')->Log(
             Priority => 'error',
             Message  => "Need PossibleValues in DynamicFieldConfig!",
@@ -145,13 +147,7 @@ sub EditFieldRender {
     my $FieldName   = 'DynamicField_' . $Param{DynamicFieldConfig}->{Name};
     my $FieldLabel  = $Param{DynamicFieldConfig}->{Label};
 
-    my $Value;
-
-    # set the field value or default
-    if ( $Param{UseDefaultValue} ) {
-        $Value = ( defined $FieldConfig->{DefaultValue} ? $FieldConfig->{DefaultValue} : '' );
-    }
-    $Value = $Param{Value} // $Value;
+    my $Value = $Param{Value} // '';
 
     # check if a value in a template (GenericAgent etc.)
     # is configured for this dynamic field
@@ -163,7 +159,7 @@ sub EditFieldRender {
         $Value = $Param{Template}->{$FieldName};
     }
 
-    # extract the dynamic field value form the web request
+    # extract the dynamic field value from the web request
     my $FieldValue = $Self->EditFieldValueGet(
         %Param,
     );
@@ -187,11 +183,6 @@ sub EditFieldRender {
     # set error css class
     if ( $Param{ServerError} ) {
         $FieldClass .= ' ServerError';
-    }
-
-    # set TreeView class
-    if ( $FieldConfig->{TreeView} ) {
-        $FieldClass .= ' DynamicFieldWithTreeView';
     }
 
     # set PossibleValues, use PossibleValuesFilter if defined
@@ -223,16 +214,6 @@ sub EditFieldRender {
         Size        => $Size,
         HTMLQuote   => 1,
     );
-
-    if ( $FieldConfig->{TreeView} ) {
-        my $TreeSelectionMessage
-            = $Param{LayoutObject}->{LanguageObject}->Translate("Show Tree Selection");
-        $HTMLString
-            .= ' <a href="#" title="'
-            . $TreeSelectionMessage
-            . '" class="ShowTreeSelection"><span>'
-            . $TreeSelectionMessage . '</span><i class="fa fa-sitemap"></i></a>';
-    }
 
     if ( $Param{Mandatory} ) {
         my $DivID = $FieldName . 'Error';
@@ -289,9 +270,6 @@ EOF
 });
 Core.App.Subscribe('Event.AJAX.FormUpdate.Callback', function(Data) {
     var FieldName = '$FieldName';
-    if (Data[FieldName] && \$('#' + FieldName).hasClass('DynamicFieldWithTreeView')) {
-        Core.UI.TreeSelection.RestoreDynamicFieldTreeView(\$('#' + FieldName), Data[FieldName], '' , 1);
-    }
 });
 EOF
     }
@@ -366,12 +344,7 @@ sub EditFieldValueValidate {
     else {
 
         # get possible values list
-        my $PossibleValues = $Param{DynamicFieldConfig}->{Config}->{PossibleValues};
-
-        # overwrite possible values if PossibleValuesFilter
-        if ( defined $Param{PossibleValuesFilter} ) {
-            $PossibleValues = $Param{PossibleValuesFilter}
-        }
+        my $PossibleValues = $Param{PossibleValuesFilter} // $Self->PossibleValuesGet();
 
         # validate if value is in possible values list (but let pass empty values)
         if ( $Value && !$PossibleValues->{$Value} ) {
@@ -401,10 +374,11 @@ sub DisplayValueRender {
     my $Value = defined $Param{Value} ? $Param{Value} : '';
 
     # get real value
-    if ( $Param{DynamicFieldConfig}->{Config}->{PossibleValues}->{$Value} ) {
+    my $PossibleValues = $Self->PossibleValuesGet();
+    if ( $PossibleValues->{$Value} ) {
 
         # get readeable value
-        $Value = $Param{DynamicFieldConfig}->{Config}->{PossibleValues}->{$Value};
+        $Value = $PossibleValues->{$Value};
     }
 
     # check is needed to translate values
@@ -483,13 +457,8 @@ sub SearchFieldRender {
     # check and set class if necessary
     my $FieldClass = 'DynamicFieldMultiSelect';
 
-    # set TreeView class
-    if ( $FieldConfig->{TreeView} ) {
-        $FieldClass .= ' DynamicFieldWithTreeView';
-    }
-
     # set PossibleValues
-    my $SelectionData = $FieldConfig->{PossibleValues};
+    my $SelectionData = $Self->PossibleValuesGet();
 
     # get historical values from database
     my $HistoricalValues = $Self->HistoricalValuesGet(%Param);
@@ -506,25 +475,6 @@ sub SearchFieldRender {
     # use PossibleValuesFilter if defined
     $SelectionData = $Param{PossibleValuesFilter} // $SelectionData;
 
-    # check if $SelectionData differs from configured PossibleValues
-    # and show values which are not contained as disabled if TreeView => 1
-    if ( $FieldConfig->{TreeView} ) {
-
-        if ( keys %{ $FieldConfig->{PossibleValues} } != keys %{$SelectionData} ) {
-
-            my @Values;
-            for my $Key ( sort keys %{ $FieldConfig->{PossibleValues} } ) {
-
-                push @Values, {
-                    Key      => $Key,
-                    Value    => $FieldConfig->{PossibleValues}->{$Key},
-                    Disabled => ( defined $SelectionData->{$Key} ) ? 0 : 1,
-                };
-            }
-            $SelectionData = \@Values;
-        }
-    }
-
     my $HTMLString = $Param{LayoutObject}->BuildSelection(
         Data         => $SelectionData,
         Name         => $FieldName,
@@ -535,16 +485,6 @@ sub SearchFieldRender {
         Multiple     => 1,
         HTMLQuote    => 1,
     );
-
-    if ( $FieldConfig->{TreeView} ) {
-        my $TreeSelectionMessage
-            = $Param{LayoutObject}->{LanguageObject}->Translate("Show Tree Selection");
-        $HTMLString
-            .= ' <a href="#" title="'
-            . $TreeSelectionMessage
-            . '" class="ShowTreeSelection"><span>'
-            . $TreeSelectionMessage . '</span><i class="fa fa-sitemap"></i></a>';
-    }
 
     # call EditLabelRender on the common Driver
     my $LabelString = $Self->EditLabelRender(
@@ -603,6 +543,8 @@ sub SearchFieldParameterBuild {
         $DisplayValue = '';
     }
 
+    my $PossibleValues = $Self->PossibleValuesGet();
+
     if ($Value) {
         if ( ref $Value eq 'ARRAY' ) {
 
@@ -610,7 +552,7 @@ sub SearchFieldParameterBuild {
             for my $Item ( @{$Value} ) {
 
                 # set the display value
-                my $DisplayItem = $Param{DynamicFieldConfig}->{Config}->{PossibleValues}->{$Item}
+                my $DisplayItem = $PossibleValues->{$Item}
                     || $Item;
 
                 # translate the value
@@ -631,7 +573,7 @@ sub SearchFieldParameterBuild {
         else {
 
             # set the display value
-            $DisplayValue = $Param{DynamicFieldConfig}->{Config}->{PossibleValues}->{$Value};
+            $DisplayValue = $PossibleValues->{$Value};
 
             # translate the value
             if (
@@ -657,7 +599,7 @@ sub StatsFieldParameterBuild {
     my ( $Self, %Param ) = @_;
 
     # set PossibleValues
-    my $Values = $Param{DynamicFieldConfig}->{Config}->{PossibleValues};
+    my $Values = $Self->PossibleValuesGet();
 
     # get historical values from database
     my $HistoricalValues
@@ -805,15 +747,15 @@ sub ValueLookup {
     my $Value = defined $Param{Key} ? $Param{Key} : '';
 
     # get real values
-    my $PossibleValues = $Param{DynamicFieldConfig}->{Config}->{PossibleValues};
+    my $PossibleValues = $Self->PossibleValuesGet();
 
     if ($Value) {
 
         # check if there is a real value for this key (otherwise keep the key)
-        if ( $Param{DynamicFieldConfig}->{Config}->{PossibleValues}->{$Value} ) {
+        if ( $PossibleValues->{$Value} ) {
 
             # get readeable value
-            $Value = $Param{DynamicFieldConfig}->{Config}->{PossibleValues}->{$Value};
+            $Value = $PossibleValues->{$Value};
 
             # check if translation is possible
             if (
@@ -834,103 +776,9 @@ sub ValueLookup {
 sub BuildSelectionDataGet {
     my ( $Self, %Param ) = @_;
 
-    my $FieldConfig            = $Param{DynamicFieldConfig}->{Config};
-    my $FilteredPossibleValues = $Param{PossibleValues};
-
-    # get the possible values again as it might or might not contain the possible none and it could
-    # oso ve overritten
     my $ConfigPossibleValues = $Self->PossibleValuesGet(%Param);
 
-    # check if $PossibleValues differs from configured PossibleValues
-    # and show values which are not contained as disabled if TreeView => 1
-    if ( $FieldConfig->{TreeView} ) {
-
-        if ( keys %{$ConfigPossibleValues} != keys %{$FilteredPossibleValues} ) {
-
-            # define variables to use later in the for loop
-            my @Values;
-            my $Parents;
-            my %DisabledElements;
-            my %ProcessedElements;
-            my $PosibleNoneSet;
-
-            # loop on all filtred possible values
-            for my $Key ( sort keys %{$FilteredPossibleValues} ) {
-
-                # special case for possible none
-                if ( !$Key && !$PosibleNoneSet && $FieldConfig->{PossibleNone} ) {
-
-                    # add possible none
-                    push @Values, {
-                        Key      => $Key,
-                        Value    => $ConfigPossibleValues->{$Key} || '-',
-                        Selected => defined $Param{Value} || !$Param{Value} ? 1 : 0,
-                    };
-                }
-
-                # try to split its parents GrandParent::Parent::Son
-                my @Elements = split /::/, $Key;
-
-                # reset parents
-                $Parents = '';
-
-                # get each element in the hierarchy
-                ELEMENT:
-                for my $Element (@Elements) {
-
-                    # add its own parents for the complete name
-                    my $ElementLongName = $Parents . $Element;
-
-                    # set new parent (before skip already processed)
-                    $Parents .= $Element . '::';
-
-                    # skip if already processed
-                    next ELEMENT if $ProcessedElements{$ElementLongName};
-
-                    my $Disabled;
-
-                    # check if element exists in the original data or if it is already marked
-                    if (
-                        !defined $FilteredPossibleValues->{$ElementLongName}
-                        && !$DisabledElements{$ElementLongName}
-                        )
-                    {
-
-                        # mark element as disabled
-                        $DisabledElements{$ElementLongName} = 1;
-
-                        # also set the disabled flag for current emlement to add
-                        $Disabled = 1;
-                    }
-
-                    # set element as already processed
-                    $ProcessedElements{$ElementLongName} = 1;
-
-                    # check if the current element is the selected one
-                    my $Selected;
-                    if (
-                        defined $Param{Value}
-                        && $Param{Value}
-                        && $ElementLongName eq $Param{Value}
-                        )
-                    {
-                        $Selected = 1;
-                    }
-
-                    # add element to the new list of possible values (now including missing parents)
-                    push @Values, {
-                        Key      => $ElementLongName,
-                        Value    => $ConfigPossibleValues->{$ElementLongName} || $ElementLongName,
-                        Disabled => $Disabled,
-                        Selected => $Selected,
-                    };
-                }
-            }
-            $FilteredPossibleValues = \@Values;
-        }
-    }
-
-    return $FilteredPossibleValues;
+    return $ConfigPossibleValues;
 }
 
 sub PossibleValuesGet {
@@ -939,13 +787,26 @@ sub PossibleValuesGet {
     # to store the possible values
     my %PossibleValues;
 
+    my $Config      = $Param{DynamicFieldConfig}->{Config} || {};
+    my $FieldName   = $Param{DynamicFieldConfig}->{Name};
+    my $CacheKey    = 'DynamicField::' . $FieldName;
+    my $CacheObject = $Kernel::OM->Get('Kernel::System::Cache');
+
+    # check if it can find anything in the cache
+    my $Cache = $CacheObject->Get(
+        Type => $Self->{CacheType},
+        Key  => $CacheKey,
+    );
+
+    return $Cache if $Cache && %{$Cache};
+
     # set PossibleNone attribute
     my $FieldPossibleNone;
     if ( defined $Param{OverridePossibleNone} ) {
         $FieldPossibleNone = $Param{OverridePossibleNone};
     }
     else {
-        $FieldPossibleNone = $Param{DynamicFieldConfig}->{Config}->{PossibleNone} || 0;
+        $FieldPossibleNone = $Config->{PossibleNone} || 0;
     }
 
     # set none value if defined on field config
@@ -953,13 +814,55 @@ sub PossibleValuesGet {
         %PossibleValues = ( '' => '-' );
     }
 
-    # set all other possible values if defined on field config
-    if ( IsHashRefWithData( $Param{DynamicFieldConfig}->{Config}->{PossibleValues} ) ) {
-        %PossibleValues = (
-            %PossibleValues,
-            %{ $Param{DynamicFieldConfig}->{Config}->{PossibleValues} },
-        );
+    # build headers
+    my $Headers = {};
+
+    # user/password combi
+    if ( $Config->{User} && $Config->{PasswordToken} ) {
+        $Headers->{Authentication} = "Basic %s", encode_base64 $Config->{User} . ':' . $Config->{PasswordToken},
     }
+
+    # auth token
+    elsif ( $Config->{PasswordToken} ) {
+        $Headers->{Authentication} = "Bearer " . $Config->{PasswordToken};
+    }
+
+    # send data
+    my %Opts;
+    if ( $Config->{Requestbody} ) {
+        $Opts{Data} = { Content => $Config->{Requestbody} };
+    }
+
+    # request the API
+    my $UA         = $Kernel::OM->Get('Kernel::System::WebUserAgent');
+    my $JSONObject = $Kernel::OM->Get('Kernel::System::JSON');
+    my %Response   = $UA->Request(
+        %Opts,
+        URL     => $Config->{URL},
+        Type    => $Config->{HTTPMethod},
+        Headers => $Headers,
+    );
+
+    if ( $Response{Content} && ${$Response{Content}} ) {
+        my $KeyPath   = JSON::Path->new( $Config->{JSONPathKey} );
+        my $ValuePath = JSON::Path->new( $Config->{JSONPathValue} // $Config->{JSONPathKey} );
+        my $Data      = $JSONObject->Decode( Data => ${$Response{Content}} );
+
+        my @Keys      = $KeyPath->values( $Data );
+        my @Values    = $ValuePath->values( $Data );
+
+        if ( @Keys && @Values ) {
+            @PossibleValues{@Keys} = @Values;
+        }
+    }
+
+    # save in cache
+    $CacheObject->Set(
+        Type  => $Self->{CacheType},
+        TTL   => $Config->{TTLCache} || 60,
+        Key   => $CacheKey,
+        Value => \%PossibleValues,
+    );
 
     # return the possible values hash as a reference
     return \%PossibleValues;
@@ -972,7 +875,7 @@ sub ColumnFilterValuesGet {
     my $FieldConfig = $Param{DynamicFieldConfig}->{Config};
 
     # set PossibleValues
-    my $SelectionData = $FieldConfig->{PossibleValues};
+    my $SelectionData = $Self->PossibleValuesGet();
 
     # get column filter values from database
     my $ColumnFilterValues
@@ -1008,8 +911,6 @@ sub ColumnFilterValuesGet {
 =back
 
 =head1 TERMS AND CONDITIONS
-
-This software is part of the OTRS project (L<http://otrs.org/>).
 
 This software comes with ABSOLUTELY NO WARRANTY. For details, see
 the enclosed file COPYING for license information (AGPL). If you
