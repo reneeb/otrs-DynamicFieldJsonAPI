@@ -57,7 +57,7 @@ sub ValueGet {
 sub ValueSet {
     my ( $Self, %Param ) = @_;
 
-    my $PossibleValues = $Self->PossibleValuesGet();
+    my $PossibleValues = $Self->PossibleValuesGet(%Param);
 
     # check for valid possible values list
     if ( !$PossibleValues->{ $Param{Value} } ) {
@@ -268,9 +268,6 @@ EOF
 \$('$FieldSelector').bind('change', function (Event) {
     Core.AJAX.FormUpdate(\$(this).parents('form'), 'AJAXUpdate', '$FieldName', [ $FieldsToUpdate ]);
 });
-Core.App.Subscribe('Event.AJAX.FormUpdate.Callback', function(Data) {
-    var FieldName = '$FieldName';
-});
 EOF
     }
 
@@ -323,6 +320,8 @@ sub EditFieldValueGet {
 sub EditFieldValueValidate {
     my ( $Self, %Param ) = @_;
 
+$Kernel::OM->Get('Kernel::System::Log')->Log( Priority => error => Message => $Kernel::OM->Get('Kernel::System::Main')->Dump( \%Param ) );
+
     # get the field value from the http request
     my $Value = $Self->EditFieldValueGet(
         DynamicFieldConfig => $Param{DynamicFieldConfig},
@@ -344,7 +343,7 @@ sub EditFieldValueValidate {
     else {
 
         # get possible values list
-        my $PossibleValues = $Param{PossibleValuesFilter} // $Self->PossibleValuesGet();
+        my $PossibleValues = $Param{PossibleValuesFilter} // $Self->PossibleValuesGet(%Param);
 
         # validate if value is in possible values list (but let pass empty values)
         if ( $Value && !$PossibleValues->{$Value} ) {
@@ -374,7 +373,7 @@ sub DisplayValueRender {
     my $Value = defined $Param{Value} ? $Param{Value} : '';
 
     # get real value
-    my $PossibleValues = $Self->PossibleValuesGet();
+    my $PossibleValues = $Self->PossibleValuesGet(%Param);
     if ( $PossibleValues->{$Value} ) {
 
         # get readeable value
@@ -458,7 +457,7 @@ sub SearchFieldRender {
     my $FieldClass = 'DynamicFieldMultiSelect';
 
     # set PossibleValues
-    my $SelectionData = $Self->PossibleValuesGet();
+    my $SelectionData = $Self->PossibleValuesGet(%Param);
 
     # get historical values from database
     my $HistoricalValues = $Self->HistoricalValuesGet(%Param);
@@ -543,7 +542,7 @@ sub SearchFieldParameterBuild {
         $DisplayValue = '';
     }
 
-    my $PossibleValues = $Self->PossibleValuesGet();
+    my $PossibleValues = $Self->PossibleValuesGet(%Param);
 
     if ($Value) {
         if ( ref $Value eq 'ARRAY' ) {
@@ -599,7 +598,7 @@ sub StatsFieldParameterBuild {
     my ( $Self, %Param ) = @_;
 
     # set PossibleValues
-    my $Values = $Self->PossibleValuesGet();
+    my $Values = $Self->PossibleValuesGet(%Param);
 
     # get historical values from database
     my $HistoricalValues
@@ -747,7 +746,7 @@ sub ValueLookup {
     my $Value = defined $Param{Key} ? $Param{Key} : '';
 
     # get real values
-    my $PossibleValues = $Self->PossibleValuesGet();
+    my $PossibleValues = $Self->PossibleValuesGet(%Param);
 
     if ($Value) {
 
@@ -875,7 +874,7 @@ sub ColumnFilterValuesGet {
     my $FieldConfig = $Param{DynamicFieldConfig}->{Config};
 
     # set PossibleValues
-    my $SelectionData = $Self->PossibleValuesGet();
+    my $SelectionData = $Self->PossibleValuesGet(%Param);
 
     # get column filter values from database
     my $ColumnFilterValues
