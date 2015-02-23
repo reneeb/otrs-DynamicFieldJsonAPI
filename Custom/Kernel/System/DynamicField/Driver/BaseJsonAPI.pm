@@ -320,8 +320,6 @@ sub EditFieldValueGet {
 sub EditFieldValueValidate {
     my ( $Self, %Param ) = @_;
 
-$Kernel::OM->Get('Kernel::System::Log')->Log( Priority => error => Message => $Kernel::OM->Get('Kernel::System::Main')->Dump( \%Param ) );
-
     # get the field value from the http request
     my $Value = $Self->EditFieldValueGet(
         DynamicFieldConfig => $Param{DynamicFieldConfig},
@@ -790,6 +788,7 @@ sub PossibleValuesGet {
     my $FieldName   = $Param{DynamicFieldConfig}->{Name};
     my $CacheKey    = 'DynamicField::' . $FieldName;
     my $CacheObject = $Kernel::OM->Get('Kernel::System::Cache');
+    my $LogObject   = $Kernel::OM->Get('Kernel::System::Log');
 
     # check if it can find anything in the cache
     my $Cache = $CacheObject->Get(
