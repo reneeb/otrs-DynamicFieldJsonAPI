@@ -19,5 +19,6 @@
         <File Permission="644" Location="Custom/Kernel/System/DynamicField/Driver/JsonAPI.pm" />
         <File Permission="644" Location="Kernel/Config/Files/DynamicFieldJsonAPI.xml" />
         <File Permission="644" Location="doc/DynamicFieldJsonAPI.json" />
+        <File Permission="644" Location="doc/en/DynamicFieldJsonAPI.pod" />
     </Filelist>
 </otrs_package>
