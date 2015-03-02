@@ -1,0 +1,40 @@
+=head1 NAME
+
+DynamicFieldJsonAPI
+
+=head1 DESCRIPTION
+
+This addon allows you to define DynamicFields that gets the "possible values" from a JSON API.
+Currently this addon supports only single selects.
+
+When creating the dynamic field, you can define the URL, a username/password combination or an
+access token, and JSONPaths (see L<https://metacpan.org/pod/JSON::Path>).
+
+With those JSONPaths you can define what elements should be the keys and what elements are the
+values for the dropdown.
+
+=head1 REPOSITORY AND BUGTRACKER
+
+The code repository and a bugtracker can be found at L<http://github.com/reneeb/otrs-DynamicFieldJsonAPI>.
+
+=head1 ROADMAP
+
+Those features need to be implemented (sponsors welcome):
+
+=over 4
+
+=item * retrieve access token (e.g. OAuth2) before the request is done.
+
+=item * Support multiselect fields
+
+=back
+
+=head1 SUPPORT
+
+If you need further support, want to pay for a feature or any OTRS services, please drop me a line at
+L<opar@perl-services.de>.
+
+=head1 AUTHOR
+
+(c) 2015 Renee Baecker, C<info@perl-services.de>
+
