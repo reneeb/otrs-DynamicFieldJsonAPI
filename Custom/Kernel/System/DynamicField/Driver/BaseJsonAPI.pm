@@ -817,12 +817,12 @@ sub PossibleValuesGet {
 
     # user/password combi
     if ( $Config->{User} && $Config->{PasswordToken} ) {
-        $Headers->{Authentication} = "Basic %s", encode_base64 $Config->{User} . ':' . $Config->{PasswordToken},
+        $Headers->{Authorization} = "Basic %s", encode_base64 $Config->{User} . ':' . $Config->{PasswordToken},
     }
 
     # auth token
     elsif ( $Config->{PasswordToken} ) {
-        $Headers->{Authentication} = "Bearer " . $Config->{PasswordToken};
+        $Headers->{Authorization} = "Bearer " . $Config->{PasswordToken};
     }
 
     # send data
