@@ -48,6 +48,7 @@ sub new {
     $Self->{ConfigParams} = [qw(
         ObjectType ObjectTypeName FieldType FieldTypeName ValidID Link
         JSONPathKey JSONPathValue HTTPMethod PasswordToken User URL TTLCache Requestbody
+        PossibleNone
     )];
 
     return $Self;
@@ -502,6 +503,18 @@ sub _ShowScreen {
         },
         Name       => 'HTTPMethod',
         SelectedID => $Param{HTTPMethod} || 'GET',
+        Class      => 'W50pc',
+    );
+
+    # create treeview option list
+    $Param{PossibleNoneSelect} = $Self->{LayoutObject}->BuildSelection(
+        Data => {
+            1 => 'Yes',
+            0 => 'No',
+        },
+        Name       => 'PossibleNone',
+        SelectedID => $Param{PossibleNone} || '0',
+        Translation => 1,
         Class      => 'W50pc',
     );
 

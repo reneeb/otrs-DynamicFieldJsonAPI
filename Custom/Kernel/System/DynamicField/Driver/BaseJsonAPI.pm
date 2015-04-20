@@ -477,7 +477,6 @@ sub SearchFieldRender {
         Name         => $FieldName,
         SelectedID   => $Value,
         Translation  => $FieldConfig->{TranslatableValues} || 0,
-        PossibleNone => 0,
         Class        => $FieldClass,
         Multiple     => 1,
         HTMLQuote    => 1,
@@ -841,6 +840,8 @@ sub PossibleValuesGet {
         Headers => $Headers,
     );
 
+$LogObject->Log( Priority => error =>Message => $Kernel::OM->Get('Kernel::System::Main')->Dump( \%Response ) );
+
     if ( $Response{Content} && ${$Response{Content}} ) {
         my $KeyPath   = JSON::Path->new( $Config->{JSONPathKey} );
         my $ValuePath = JSON::Path->new( $Config->{JSONPathValue} // $Config->{JSONPathKey} );
@@ -848,6 +849,8 @@ sub PossibleValuesGet {
 
         my @Keys      = $KeyPath->values( $Data );
         my @Values    = $ValuePath->values( $Data );
+
+$LogObject->Log( Priority => error =>Message => $Kernel::OM->Get('Kernel::System::Main')->Dump( [ \@Keys, \@Values ] ) );
 
         if ( @Keys && @Values ) {
             @PossibleValues{@Keys} = @Values;
