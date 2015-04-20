@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <otrs_package version="1.0">
-    <!-- GENERATED WITH OTRS::OPM::Maker::Command::sopm (1.28) -->
+    <!-- GENERATED WITH OTRS::OPM::Maker::Command::sopm (1.29) -->
     <Name>DynamicFieldJsonAPI</Name>
-    <Version>4.0.1</Version>
+    <Version>4.0.2</Version>
     <Framework>4.0.x</Framework>
     <ModuleRequired Version="0.205">JSON::Path</ModuleRequired>
     <ModuleRequired Version="3.13">MIME::Base64</ModuleRequired>
