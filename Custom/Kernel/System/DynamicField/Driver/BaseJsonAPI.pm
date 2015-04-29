@@ -480,6 +480,7 @@ sub SearchFieldRender {
         Class        => $FieldClass,
         Multiple     => 1,
         HTMLQuote    => 1,
+        PossibleNone => 1,
     );
 
     # call EditLabelRender on the common Driver
@@ -840,17 +841,33 @@ sub PossibleValuesGet {
         Headers => $Headers,
     );
 
-$LogObject->Log( Priority => error =>Message => $Kernel::OM->Get('Kernel::System::Main')->Dump( \%Response ) );
-
     if ( $Response{Content} && ${$Response{Content}} ) {
         my $KeyPath   = JSON::Path->new( $Config->{JSONPathKey} );
         my $ValuePath = JSON::Path->new( $Config->{JSONPathValue} // $Config->{JSONPathKey} );
+
         my $Data      = $JSONObject->Decode( Data => ${$Response{Content}} );
 
         my @Keys      = $KeyPath->values( $Data );
-        my @Values    = $ValuePath->values( $Data );
+        my @Values;
 
-$LogObject->Log( Priority => error =>Message => $Kernel::OM->Get('Kernel::System::Main')->Dump( [ \@Keys, \@Values ] ) );
+        # if value has more than one path
+        if ( $ValuePath =~ m{\$ .*? \$}xms ) {
+            my @Paths = $ValuePath =~ m{(\$[^\s]+)}xmsg;
+            for my $Path ( @Paths ) {
+                my $PathObj    = JSON::Path->new( $Path );
+                my @ValueParts = $PathObj->values( $Data );
+
+                for my $Index ( 0 .. $#ValueParts ) {
+                    $Values[$Index] = sprintf "%s %s %s",
+                        $Values[$Index] || '',
+                        ( $Values[$Index] ? '-' : '' ),
+                        $ValueParts[$Index];
+                }
+            }
+        }
+        else {
+            @Values = $ValuePath->values( $Data );
+        }
 
         if ( @Keys && @Values ) {
             @PossibleValues{@Keys} = @Values;
