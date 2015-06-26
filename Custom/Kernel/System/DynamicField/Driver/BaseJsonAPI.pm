@@ -26,6 +26,7 @@ our @ObjectDependencies = qw(
     Kernel::System::Ticket::ColumnFilter
     Kernel::System::Log
     Kernel::System::WebUserAgent
+    Kernel::System::Web::Request
 );
 
 =head1 NAME
@@ -311,6 +312,17 @@ sub EditFieldValueGet {
         return {
             $FieldName => $Value,
         };
+    }
+
+    my ($Package) = caller(0);
+
+    if (
+        $Param{DynamicFieldConfig}->{GenericAgentReturnUndefOnEmpty}
+        && $Package
+        && $Package eq 'Kernel::System::GenericAgent'
+        && !length $Value
+    ) {
+        return;
     }
 
     # for this field the normal return an the ReturnValueStructure are the same

@@ -518,6 +518,17 @@ sub _ShowScreen {
         Class      => 'W50pc',
     );
 
+    $Param{GenericAgentReturnUndefOnEmptySelect} = $Self->{LayoutObject}->BuildSelection(
+        Data => {
+            1 => 'Yes',
+            0 => 'No',
+        },
+        Name       => 'GenericAgentReturnUndefOnEmpty',
+        SelectedID => $Param{GenericAgentReturnUndefOnEmpty} || '0',
+        Translation => 1,
+        Class      => 'W50pc',
+    );
+
     my $Link = $Param{Link} || '';
 
     my $ReadonlyInternalField = '';

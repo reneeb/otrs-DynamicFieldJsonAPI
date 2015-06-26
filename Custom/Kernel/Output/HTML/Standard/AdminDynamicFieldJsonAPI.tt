@@ -213,6 +213,16 @@
                             </p>
                         </div>
                         <div class="Clear"></div>
+
+                        <label for="GenericAgentReturnUndefOnEmpty">[% Translate("GenericAgent return undef on empty") | html %]:</label>
+                        <div class="Field">
+                            [% Data.GenericAgentReturnUndefOnEmpty %]
+                            <p class="FieldExplanation">
+                                [% Translate("To avoid resetting the ticket dynamic field via a GenericAgent the field should return undef instead of empty string") | html %]
+                            </p>
+                        </div>
+                        <div class="Clear"></div>
+
                     </fieldset>
                 </div>
             </div>
