@@ -188,6 +188,51 @@
                         </div>
                         <div class="Clear"></div>
 
+                        <label>[% Translate("Request Parameters") | html %]:</label>
+                        <div class="Field ParamInsert">
+                            <input type="hidden" name="ParamCounter" value="[% Data.ParamCounter | html %]" id="ParamCounter" class="ParamCounter" />
+[% RenderBlockStart("ParamRow") %]
+                            <div class="ParamRow">
+                                <label class="Mandatory" for="Key_[% Data.ParamCounter | html %]"><span class="Marker">*</span>[% Translate("Key") | html %]:</label>
+                                <input name="Key_[% Data.ParamCounter | html %]" id="Key_[% Data.ParamCounter | html %]" class="DefaultParamKeyItem Validate_Required W20pc [% Data.KeyError | html %]" type="text" maxlength="100" value="[% Data.Key | html %]"/>
+                                <div id="Key_[% Data.ParamCounter | html %]Error" class="TooltipErrorMessage"><p>[% Translate("This field is required.") | html %]</p></div>
+                                <div id="Key_[% Data.ParamCounter | html %]ServerError" class="TooltipErrorMessage"><p>[% Translate(Data.KeyErrorStrg) | html %]</p></div>
+
+                                <label class="Mandatory" for="Param_[% Data.ParamCounter | html %]"><span class="Marker">*</span>[% Translate("Param") | html %]:</label>
+                                <input name="Param_[% Data.ParamCounter | html %]" id="Param_[% Data.ParamCounter | html %]" class="DefaultParamItem Validate_Required W20pc [% Data.ParamError | html %]" type="text" maxlength="100" value="[% Data.Param | html %]"/>
+                                <div id="Param_[% Data.ParamCounter | html %]Error" class="TooltipErrorMessage"><p>[% Translate("This field is required.") | html %]</p></div>
+                                <div id="Param_[% Data.ParamCounter | html %]ServerError" class="TooltipErrorMessage"><p>[% Translate("This field is required.") | html %]</p></div>
+
+                                <a href="#" id="RemoveParam_[% Data.ParamCounter | html %]" class="RemoveButton ParamRemove"><i class="fa fa-minus-square-o"></i><span class="InvisibleText">[% Translate("Remove param") | html %]</span></a>
+                                <div class="SpacingTopMini" ></div>
+                            </div>
+[% RenderBlockEnd("ParamRow") %]
+[% RenderBlockStart("ParamTemplate") %]
+                            <div class="ParamTemplate Hidden">
+                                <label class="Mandatory" for="Key"><span class="Marker">*</span>[% Translate("Key") | html %]:</label>
+                                <input name="Key_[% Data.ParamCounter | html %]" id="Key" class="DefaultParamKeyItem W20pc" type="text" maxlength="100" value="[% Data.Key | html %]"/>
+                                <div id="KeyError" class="TooltipErrorMessage"><p>[% Translate("This field is required.") | html %]</p></div>
+                                <div id="KeyServerError" class="TooltipErrorMessage"><p>[% Translate(Data.KeyErrorStrg) | html %]</p></div>
+
+                                <label class="Mandatory" for="Param"><span class="Marker">*</span>[% Translate("Param") | html %]:</label>
+                                <input name="Param_[% Data.ParamCounter | html %]" id="Param" class="DefaultParamItem W20pc" type="text" maxlength="100" value="[% Data.Param | html %]"/>
+                                <div id="ParamError" class="TooltipErrorMessage"><p>[% Translate("This field is required.") | html %]</p></div>
+                                <div id="ParamServerError" class="TooltipErrorMessage"><p>[% Translate("This field is required.") | html %]</p></div>
+
+                                <a href="#" id="RemoveParam_[% Data.ParamCounter | html %]" class="RemoveButton ParamRemove"><i class="fa fa-minus-square-o"></i><span class="InvisibleText">[% Translate("Remove param") | html %]</span></a>
+                                <div class="SpacingTopMini" ></div>
+                            </div>
+[% RenderBlockEnd("ParamTemplate") %]
+                            <input type="hidden" name="DeletedParam" value="[% Data.DeletedString | html %]" id="DeletedParam" class="DeletedParam" />
+                        </div>
+                        <div class="Clear"></div>
+
+                        <label for="AddParam">[% Translate("Add param") | html %]:</label>
+                        <div class="Field">
+                            <a href="#" id="AddParam" class="AddButton"><i class="fa fa-plus-square-o"></i><span class="InvisibleText">[% Translate("Add Param") | html %]</span></a>
+                        </div>
+                        <div class="Clear"></div>
+
                         <label for="PossibleNone">[% Translate("PossibleNone") | html %]:</label>
                         <div class="Field">
                             [% Data.PossibleNoneSelect %]
@@ -214,9 +259,15 @@
                         </div>
                         <div class="Clear"></div>
 
+                        <label for="SearchFieldSize">[% Translate("Searchfield size") | html %]:</label>
+                        <div class="Field">
+                            <input id="SearchFieldSize" class="W50pc" type="text" maxlength="500" value="[% Data.SearchFieldSize | html %]" name="SearchFieldSize"/>
+                        </div>
+                        <div class="Clear"></div>
+
                         <label for="GenericAgentReturnUndefOnEmpty">[% Translate("GenericAgent return undef on empty") | html %]:</label>
                         <div class="Field">
-                            [% Data.GenericAgentReturnUndefOnEmpty %]
+                            [% Data.GenericAgentReturnUndefOnEmptySelect %]
                             <p class="FieldExplanation">
                                 [% Translate("To avoid resetting the ticket dynamic field via a GenericAgent the field should return undef instead of empty string") | html %]
                             </p>
@@ -241,6 +292,24 @@
 <script type="text/javascript">//<![CDATA[
 $('.ShowWarning').bind('change keyup', function (Event) {
     $('p.Warning').removeClass('Hidden');
+});
+
+//bind click function to add button
+$('#AddParam').bind('click', function () {
+    Core.Agent.Admin.DynamicFieldMultiselect.AddValue(
+        $(this).closest('fieldset').find('.ParamInsert')
+    );
+    return false;
+});
+
+//bind click function to remove button
+$('.ParamRemove').bind('click', function () {
+    Core.Agent.Admin.DynamicFieldMultiselect.RemoveValue($(this).attr('id'));
+    return false;
+});
+
+$('.DefaultParamKeyItem,.DefaultParamItem').bind('keyup', function () {
+    Core.Agent.Admin.DynamicFieldMultiselect.RecreateDefaultValueList();
 });
 
 Core.Agent.Admin.DynamicField.ValidationInit();

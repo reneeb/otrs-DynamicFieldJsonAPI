@@ -21,6 +21,7 @@ use Kernel::System::VariableCheck qw(:all);
 use base qw(Kernel::System::DynamicField::Driver::Base);
 
 our @ObjectDependencies = qw(
+    Kernel::Config
     Kernel::System::DB
     Kernel::System::DynamicFieldValue
     Kernel::System::Ticket::ColumnFilter
@@ -493,6 +494,7 @@ sub SearchFieldRender {
         Multiple     => 1,
         HTMLQuote    => 1,
         PossibleNone => 1,
+        Size         => $FieldConfig->{SearchFieldSize} || 5,
     );
 
     # call EditLabelRender on the common Driver

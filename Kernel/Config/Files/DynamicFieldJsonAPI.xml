@@ -12,7 +12,7 @@
                 <Loader>
                     <CSS>Core.Agent.Admin.DynamicField.css</CSS>
                     <JavaScript>Core.Agent.Admin.DynamicField.js</JavaScript>
-                    <JavaScript>Core.Agent.Admin.DynamicFieldJsonAPI.js</JavaScript>
+                    <JavaScript>Core.Agent.Admin.DynamicFieldMultiselect.js</JavaScript>
                 </Loader>
             </FrontendModuleReg>
         </Setting>

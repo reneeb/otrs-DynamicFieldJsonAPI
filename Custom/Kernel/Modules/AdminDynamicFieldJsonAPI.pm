@@ -48,7 +48,7 @@ sub new {
     $Self->{ConfigParams} = [qw(
         ObjectType ObjectTypeName FieldType FieldTypeName ValidID Link
         JSONPathKey JSONPathValue HTTPMethod PasswordToken User URL TTLCache Requestbody
-        PossibleNone
+        PossibleNone SearchFieldSize GenericAgentReturnUndefOnEmpty
     )];
 
     return $Self;
@@ -181,6 +181,34 @@ sub _AddAction {
         );
     }
 
+    my $RequestParams = $Self->_GetRequestParams();
+
+    # set errors for possible values entries
+    KEY:
+    for my $Key ( sort keys %{$RequestParams} ) {
+
+        # check for empty original values
+        if ( $Key =~ m{\A $Self->{EmptyString} (?: \d+)}smx ) {
+
+            # set a true entry in KeyEmptyError
+            $Errors{'RequestParamErrors'}->{'KeyEmptyError'}->{$Key} = 1;
+        }
+
+        # otherwise check for duplicate original values
+        elsif ( $Key =~ m{\A (.+) - $Self->{DuplicateString} (?: \d+)}smx ) {
+
+            # set an entry in OrigParamDuplicateError with the duplicate key as value
+            $Errors{'RequestParamErrors'}->{'KeyDuplicateError'}->{$Key} = $1;
+        }
+
+        # check for empty new values
+        if ( !defined $RequestParams->{$Key} ) {
+
+            # set a true entry in NewParamEmptyError
+            $Errors{'RequestParamErrors'}->{'ParamEmptyError'}->{$Key} = 1;
+        }
+    }
+
     # return to add screen if errors
     if (%Errors) {
         return $Self->_ShowScreen(
@@ -188,13 +216,15 @@ sub _AddAction {
             %Errors,
             %GetParam,
             Mode           => 'Add',
+            RequestParams  => $RequestParams,
         );
     }
 
     # set specific config
     my @Keys = @{ $Self->{ConfigParams} || [] };
     my %FieldConfig;
-    @FieldConfig{@Keys} = @GetParam{@Keys};
+    @FieldConfig{@Keys}         = @GetParam{@Keys};
+    $FieldConfig{RequestParams} = $RequestParams;
 
     # create a new field
     my $FieldID = $Self->{DynamicFieldObject}->DynamicFieldAdd(
@@ -377,6 +407,34 @@ sub _ChangeAction {
         );
     }
 
+    my $RequestParams = $Self->_GetRequestParams();
+
+    # set errors for possible values entries
+    KEY:
+    for my $Key ( sort keys %{$RequestParams} ) {
+
+        # check for empty original values
+        if ( $Key =~ m{\A $Self->{EmptyString} (?: \d+)}smx ) {
+
+            # set a true entry in KeyEmptyError
+            $Errors{'RequestParamErrors'}->{'KeyEmptyError'}->{$Key} = 1;
+        }
+
+        # otherwise check for duplicate original values
+        elsif ( $Key =~ m{\A (.+) - $Self->{DuplicateString} (?: \d+)}smx ) {
+
+            # set an entry in OrigParamDuplicateError with the duplicate key as value
+            $Errors{'RequestParamErrors'}->{'KeyDuplicateError'}->{$Key} = $1;
+        }
+
+        # check for empty new values
+        if ( !defined $RequestParams->{$Key} ) {
+
+            # set a true entry in NewParamEmptyError
+            $Errors{'RequestParamErrors'}->{'ParamEmptyError'}->{$Key} = 1;
+        }
+    }
+
     # return to change screen if errors
     if (%Errors) {
         return $Self->_ShowScreen(
@@ -385,13 +443,15 @@ sub _ChangeAction {
             %GetParam,
             ID             => $FieldID,
             Mode           => 'Change',
+            RequestParams  => $RequestParams,
         );
     }
 
     # set specific config
     my @Keys = @{ $Self->{ConfigParams} || [] };
     my %FieldConfig;
-    @FieldConfig{@Keys} = @GetParam{@Keys};
+    @FieldConfig{@Keys}         = @GetParam{@Keys};
+    $FieldConfig{RequestParams} = $RequestParams;
 
     # update dynamic field (FieldType and ObjectType cannot be changed; use old values)
     my $UpdateSuccess = $Self->{DynamicFieldObject}->DynamicFieldUpdate(
@@ -556,6 +616,50 @@ sub _ShowScreen {
     $Output .= $Self->{LayoutObject}->Footer();
 
     return $Output;
+}
+
+sub _GetRequestParams {
+    my ( $Self, %Param ) = @_;
+
+    my $RequestParamConfig;
+
+    # get parameters from web browser
+    # get ParamCounters
+    my $ParamCounter          = $Self->{ParamObject}->GetParam( Param => 'ParamCounter' ) || 0;
+    my $EmptyParamCounter     = 0;
+    my $DuplicateParamCounter = 0;
+
+    # get possible values
+    my $Params;
+    VALUEINDEX:
+    for my $ParamIndex ( 1 .. $ParamCounter ) {
+        my $Key = $Self->{ParamObject}->GetParam( Param => 'Key' . '_' . $ParamIndex );
+        $Key = ( defined $Key ? $Key : '' );
+
+        # check if key was deleted by the user and skip it
+        next VALUEINDEX if $Key eq $Self->{DeletedString};
+
+        # check if the original value is empty
+        if ( $Key eq '' ) {
+
+            # change the empty value to a predefined string
+            $Key = $Self->{EmptyString} . int $EmptyParamCounter;
+            $EmptyParamCounter++;
+        }
+
+        # otherwise check for duplicate
+        elsif ( exists $RequestParamConfig->{$Key} ) {
+
+            # append a predefined unique string to make this value unique
+            $Key .= '-' . $Self->{DuplicateString} . $DuplicateParamCounter;
+            $DuplicateParamCounter++;
+        }
+
+        my $Param = $Self->{ParamObject}->GetParam( Param => 'Param' . '_' . $ParamIndex );
+        $Param = ( defined $Param ? $Param : '' );
+        $RequestParamConfig->{$Key} = $Param;
+    }
+    return $RequestParamConfig;
 }
 
 1;
