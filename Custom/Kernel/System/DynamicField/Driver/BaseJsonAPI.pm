@@ -316,10 +316,16 @@ sub EditFieldValueGet {
         };
     }
 
-    my ($Package) = caller(0);
+    my ($Package);
+
+    for my $CallerIndex ( 0 .. 2 ) {
+        ($Package) = caller($CallerIndex);
+        last if !$Package;
+        last if $Package =~ m{GenericAgent};
+    }
 
     if (
-        $Param{DynamicFieldConfig}->{GenericAgentReturnUndefOnEmpty}
+        $Param{DynamicFieldConfig}->{Config}->{GenericAgentReturnUndefOnEmpty}
         && $Package
         && $Package eq 'Kernel::System::GenericAgent'
         && !length $Value
