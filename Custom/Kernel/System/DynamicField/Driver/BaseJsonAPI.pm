@@ -15,6 +15,7 @@ use warnings;
 use List::Util qw(first);
 use MIME::Base64 qw(encode_base64);
 use JSON::Path;
+use URI::Escape;
 
 use Kernel::System::VariableCheck qw(:all);
 
@@ -845,12 +846,33 @@ sub PossibleValuesGet {
         $Opts{Data} = { Content => $Config->{Requestbody} };
     }
 
+    my $URL = $Config->{URL};
+
+    if ( $Config->{HTTPMethod} ne 'GET' && $Config->{RequestParams} && keys %{ $Config->{RequestParams} } ) {
+        for my $Attr ( keys %{ $Config->{RequestParams} } ) {
+            my $Key   = $Attr;
+            my $Value = $Config->{RequestParams}->{$Attr};
+            $Opts{Data}->{$Key} = $Value;
+        }
+    }
+    elsif ( $Config->{HTTPMethod} eq 'GET' && $Config->{RequestParams} && keys %{ $Config->{RequestParams} } ) {
+        my @URLParams;
+
+        for my $Attr ( keys %{ $Config->{RequestParams} } ) {
+            my $Key   = uri_escape $Attr;
+            my $Value = uri_escape $Config->{RequestParams}->{$Attr};
+            push @URLParams, "$Key=$Value";
+        }
+
+        $URL .= '?' . join '&', @URLParams;
+    }
+
     # request the API
     my $UA         = $Kernel::OM->Get('Kernel::System::WebUserAgent');
     my $JSONObject = $Kernel::OM->Get('Kernel::System::JSON');
     my %Response   = $UA->Request(
         %Opts,
-        URL     => $Config->{URL},
+        URL     => $URL,
         Type    => $Config->{HTTPMethod},
         Headers => $Headers,
     );
