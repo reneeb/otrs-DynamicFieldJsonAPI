@@ -296,7 +296,7 @@ $('.ShowWarning').bind('change keyup', function (Event) {
 
 //bind click function to add button
 $('#AddParam').bind('click', function () {
-    Core.Agent.Admin.DynamicFieldMultiselect.AddValue(
+    Core.Agent.Admin.DynamicFieldJsonAPI.AddParam(
         $(this).closest('fieldset').find('.ParamInsert')
     );
     return false;
@@ -304,12 +304,8 @@ $('#AddParam').bind('click', function () {
 
 //bind click function to remove button
 $('.ParamRemove').bind('click', function () {
-    Core.Agent.Admin.DynamicFieldMultiselect.RemoveValue($(this).attr('id'));
+    Core.Agent.Admin.DynamicFieldJsonAPI.RemoveParam($(this).attr('id'));
     return false;
-});
-
-$('.DefaultParamKeyItem,.DefaultParamItem').bind('keyup', function () {
-    Core.Agent.Admin.DynamicFieldMultiselect.RecreateDefaultValueList();
 });
 
 Core.Agent.Admin.DynamicField.ValidationInit();

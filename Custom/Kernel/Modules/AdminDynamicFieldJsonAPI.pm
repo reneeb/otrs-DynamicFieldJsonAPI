@@ -291,6 +291,7 @@ sub _Change {
     # extract configuration
     if ( IsHashRefWithData( $DynamicFieldData->{Config} ) ) {
         my @Keys = @{ $Self->{ConfigParams} || [] };
+        push @Keys, "RequestParams";
         @Config{@Keys} = @{ $DynamicFieldData->{Config} }{@Keys};
     }
 
@@ -552,6 +553,17 @@ sub _ShowScreen {
         Class        => 'W50pc',
     );
 
+    my $ReadonlyInternalField = '';
+
+    # Internal fields can not be deleted and name should not change.
+    if ( $Param{InternalField} ) {
+        $Self->{LayoutObject}->Block(
+            Name => 'InternalField',
+            Data => {%Param},
+        );
+        $ReadonlyInternalField = 'readonly="readonly"';
+    }
+
     # define as 0 to get the real value in the HTML
     my $ValueCounter = 0;
 
@@ -564,6 +576,84 @@ sub _ShowScreen {
         Name       => 'HTTPMethod',
         SelectedID => $Param{HTTPMethod} || 'GET',
         Class      => 'W50pc',
+    );
+
+    # define as 0 to get the real value in the HTML
+    my $ParamCounter = 0;
+
+    # set RequestParams
+    my %RequestParams;
+    if ( IsHashRefWithData( $Param{RequestParams} ) ) {
+        %RequestParams = %{ $Param{RequestParams} };
+    }
+
+    # output the possible values and errors within (if any)
+    for my $Key ( sort keys %RequestParams ) {
+
+        $ParamCounter++;
+
+        # needed for server side validation
+        my $KeyError;
+        my $KeyErrorStrg;
+        my $ParamError;
+
+        # to set the correct original value
+        my $KeyClone = $Key;
+
+        # check for errors
+        if ( $Param{'RequestParamErrors'} ) {
+
+            # check for errors on original value (empty)
+            if ( $Param{'RequestParamErrors'}->{'KeyEmptyError'}->{$Key} ) {
+
+                # if the original value was empty it has been changed in _GetParams to a predefined
+                # string and need to be set to empty again
+                $KeyClone = '';
+
+                # set the error class
+                $KeyError     = 'ServerError';
+                $KeyErrorStrg = 'This field is required.'
+            }
+            # check for errors on original value (duplicate)
+            elsif ( $Param{'RequestParamErrors'}->{'KeyDuplicateError'}->{$Key} ) {
+
+                # if the original value was empty it has been changed in _GetParams to a predefined
+                # string and need to be set to the original value again
+                $KeyClone = $Param{'RequestParamErrors'}->{'KeyDuplicateError'}->{$Key};
+
+                # set the error class
+                $KeyError     = 'ServerError';
+                $KeyErrorStrg = 'This field value is duplicated.'
+            }
+
+            # check for error on value
+            if ( $Param{'RequestParamErrors'}->{'ParamEmptyError'}->{$Key} ) {
+
+                # set the error class
+                $ParamError = 'ServerError';
+            }
+        }
+
+        # create a value map row
+        $Self->{LayoutObject}->Block(
+            Name => 'ParamRow',
+            Data => {
+                KeyError     => $KeyError,
+                KeyErrorStrg => $KeyErrorStrg || 'This field is required.',
+                Key          => $KeyClone,
+                ParamCounter => $ParamCounter,
+                Param        => $RequestParams{$Key},
+                ParamError   => $ParamError,
+            },
+        );
+    }
+
+    # create the request param template
+    $Self->{LayoutObject}->Block(
+        Name => 'ParamTemplate',
+        Data => {
+            %Param,
+        },
     );
 
     # create treeview option list
@@ -591,17 +681,6 @@ sub _ShowScreen {
 
     my $Link = $Param{Link} || '';
 
-    my $ReadonlyInternalField = '';
-
-    # Internal fields can not be deleted and name should not change.
-    if ( $Param{InternalField} ) {
-        $Self->{LayoutObject}->Block(
-            Name => 'InternalField',
-            Data => {%Param},
-        );
-        $ReadonlyInternalField = 'readonly="readonly"';
-    }
-
     # generate output
     $Output .= $Self->{LayoutObject}->Output(
         TemplateFile => 'AdminDynamicFieldJsonAPI',
@@ -610,6 +689,7 @@ sub _ShowScreen {
             ValidityStrg           => $ValidityStrg,
             DynamicFieldOrderStrg  => $DynamicFieldOrderStrg,
             ReadonlyInternalField  => $ReadonlyInternalField,
+            ParamCounter           => $ParamCounter,
         }
     );
 
@@ -628,6 +708,8 @@ sub _GetRequestParams {
     my $ParamCounter          = $Self->{ParamObject}->GetParam( Param => 'ParamCounter' ) || 0;
     my $EmptyParamCounter     = 0;
     my $DuplicateParamCounter = 0;
+
+    return {} if !$ParamCounter;
 
     # get possible values
     my $Params;
@@ -659,6 +741,7 @@ sub _GetRequestParams {
         $Param = ( defined $Param ? $Param : '' );
         $RequestParamConfig->{$Key} = $Param;
     }
+
     return $RequestParamConfig;
 }
 
