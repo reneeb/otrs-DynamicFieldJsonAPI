@@ -209,13 +209,14 @@ sub EditFieldRender {
     );
 
     my $HTMLString = $Param{LayoutObject}->BuildSelection(
-        Data => $DataValues || {},
-        Name => $FieldName,
-        SelectedID  => $Value,
-        Translation => $FieldConfig->{TranslatableValues} || 0,
-        Class       => $FieldClass,
-        Size        => $Size,
-        HTMLQuote   => 1,
+        Data         => $DataValues || {},
+        Name         => $FieldName,
+        SelectedID   => $Value,
+        Translation  => $FieldConfig->{TranslatableValues} || 0,
+        Class        => $FieldClass,
+        Size         => $Size,
+        HTMLQuote    => 1,
+        PossibleNone => $FieldConfig->{PossibleNone},
     );
 
     if ( $Param{Mandatory} ) {
