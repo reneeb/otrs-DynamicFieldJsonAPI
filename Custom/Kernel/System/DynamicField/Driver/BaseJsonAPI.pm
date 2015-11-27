@@ -189,7 +189,7 @@ sub EditFieldRender {
     }
 
     # set PossibleValues, use PossibleValuesFilter if defined
-    my $PossibleValues = $Param{PossibleValuesFilter} // $Self->PossibleValuesGet(%Param);
+    my $PossibleValues = $Self->PossibleValuesGet(%Param); #$Param{PossibleValuesFilter} // $Self->PossibleValuesGet(%Param);
 
     my $Size = 1;
 
@@ -200,6 +200,11 @@ sub EditFieldRender {
     # selected
     if ( $Param{ConfirmationNeeded} ) {
         $Size = 5;
+    }
+
+    my $PossibleNone;
+    if ( $FieldConfig->{PossibleNone} ) {
+        $PossibleNone = 1;
     }
 
     my $DataValues = $Self->BuildSelectionDataGet(
@@ -216,7 +221,8 @@ sub EditFieldRender {
         Class        => $FieldClass,
         Size         => $Size,
         HTMLQuote    => 1,
-        PossibleNone => $FieldConfig->{PossibleNone},
+        PossibleNone => $PossibleNone,
+        AutoComplete => 'off',
     );
 
     if ( $Param{Mandatory} ) {
@@ -915,6 +921,10 @@ sub PossibleValuesGet {
         if ( @Keys && @Values ) {
             @PossibleValues{@Keys} = @Values;
         }
+    }
+
+    if ($FieldPossibleNone) {
+        $PossibleValues{''} = '-';
     }
 
     # save in cache
