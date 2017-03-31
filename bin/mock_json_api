@@ -1,0 +1,30 @@
+#!/usr/bin/perl
+
+use strict;
+use warnings;
+
+use Mojolicious::Lite;
+use Mojo::JSON qw(decode_json);
+
+get '/' => sub {
+    my ($c) = shift;
+
+    $c->redirect_to( $c->url_for('/api/v0/project') );
+};
+
+any '/api/v0/project' => sub {
+    my ($c) = shift;
+
+    my $data     = _get_response();
+    my $response = decode_json( $data );
+
+    return $c->render( json => $response );
+};
+
+app->start;
+
+sub _get_response {
+
+return q~
+{"project":[{"workphase_id":1,"abbreviation":"WHH","end_date":"2017-03-26 00:00:00","projectnumber":"01","status_id":1,"costgroup_system_id":1,"shortname":"Wohngeb\u00e4ude Hochhausen","description":"Das ist ein Test","start_date":"2017-03-10 00:00:00","type":"project","href":"/project/1","id":1},{"projectnumber":"02","status_id":1,"workphase_id":1,"abbreviation":"T2","end_date":"2017-03-24 00:00:00","id":2,"type":"project","href":"/project/2","costgroup_system_id":1,"description":"lasdjf\u00f6vj\u00f6alsdjfa","shortname":"Test2","start_date":"2017-03-17 00:00:00"},{"abbreviation":"TEP","end_date":"2017-06-10 00:00:00","workphase_id":1,"status_id":1,"projectnumber":"03","start_date":"2017-03-24 00:00:00","description":"Test","costgroup_system_id":1,"shortname":"TestProjekt","href":"/project/3","type":"project","id":3}]}~;
+}
