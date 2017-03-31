@@ -218,7 +218,7 @@ sub EditFieldRender {
         Name         => $FieldName,
         SelectedID   => $Value,
         Translation  => $FieldConfig->{TranslatableValues} || 0,
-        Class        => $FieldClass,
+        Class        => "Modernize $FieldClass",
         Size         => $Size,
         HTMLQuote    => 1,
         PossibleNone => $PossibleNone,
