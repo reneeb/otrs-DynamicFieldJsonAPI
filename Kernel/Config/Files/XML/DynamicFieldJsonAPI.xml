@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<otrs_config version="2.0" init="Application">
+    <Setting Name="Frontend::Module###AdminDynamicFieldJsonAPI" Required="0" Valid="1">
+        <Description Translatable="1">Frontend module registration for the agent interface.</Description>
+        <Navigation>Frontend::Admin::ModuleRegistration</Navigation>
+        <Value>
+            <Item ValueType="FrontendRegistration">
+                <Hash>
+                    <Item Key="GroupRo">
+                    </Item>
+                    <Item Key="Group">
+                        <Array>
+                            <Item>admin</Item>
+                        </Array>
+                    </Item>
+                    <Item Key="Description">Admin</Item>
+                    <Item Key="Title" Translatable="1">Dynamic Fields Drop-down Backend GUI</Item>
+                    <Item Key="NavBarName"></Item>
+                </Hash>
+            </Item>
+        </Value>
+    </Setting>
+    <Setting Name="Loader::Module::AdminDynamicFieldJsonAPI###002-DynamicFieldJsonAPI" Required="0" Valid="1">
+        <Description Translatable="1">Loader module registration for the agent interface.</Description>
+        <Navigation>Frontend::Admin::ModuleRegistration::Loader</Navigation>
+        <Value>
+            <Hash>
+                <Item Key="CSS">
+                    <Array>
+                        <Item>Core.Agent.Admin.DynamicField.css</Item>
+                    </Array>
+                </Item>
+                <Item Key="JavaScript">
+                    <Array>
+                        <Item>Core.Agent.Admin.DynamicField.js</Item>
+                        <Item>Core.Agent.Admin.DynamicFieldJsonAPI.js</Item>
+                    </Array>
+                </Item>
+            </Hash>
+        </Value>
+    </Setting>
+    <Setting Name="Frontend::Navigation###AdminDynamicFieldJsonAPI###002-DynamicFieldJsonAPI" Required="0" Valid="0">
+        <Description Translatable="1">Main menu item registration.</Description>
+        <Navigation>Frontend::Admin::ModuleRegistration::MainMenu</Navigation>
+        <Value>
+            <Array>
+                <DefaultItem ValueType="FrontendNavigation">
+                    <Hash>
+                    </Hash>
+                </DefaultItem>
+            </Array>
+        </Value>
+    </Setting>
+    <Setting Name="DynamicFields::Driver###JsonAPI" Required="0" Valid="1">
+        <Description Translatable="1">DynamicField backend registration.</Description>
+        <Navigation>Core::DynamicFields::DriverRegistration</Navigation>
+        <Value>
+            <Hash>
+                <Item Key="DisplayName" Translatable="1">JsonAPI</Item>
+                <Item Key="Module">Kernel::System::DynamicField::Driver::JsonAPI</Item>
+                <Item Key="ConfigDialog">AdminDynamicFieldJsonAPI</Item>
+            </Hash>
+        </Value>
+    </Setting>
+    <Setting Name="PublicFrontend::Module###PublicDeleteDFCache" Required="0" Valid="0">
+        <Description Translatable="1">Frontend module registration to delete a dynamic field cache.</Description>
+        <Navigation>Frontend::Public::ModuleRegistration</Navigation>
+        <Value>
+            <Item ValueType="FrontendRegistration">
+                <Hash>
+                    <Item Key="Group">
+                    </Item>
+                    <Item Key="GroupRo">
+                    </Item>
+                    <Item Key="Description">Delete DynamicField Cache</Item>
+                    <Item Key="NavBarName"></Item>
+                    <Item Key="Title">Delete DynamicField Cache</Item>
+                </Hash>
+            </Item>
+        </Value>
+    </Setting>
+    <Setting Name="PublicFrontend::Navigation###PublicDeleteDFCache###002-DynamicFieldJsonAPI" Required="0" Valid="0">
+        <Description Translatable="1">Main menu item registration.</Description>
+        <Navigation>Frontend::Public::ModuleRegistration</Navigation>
+        <Value>
+            <Array>
+                <DefaultItem ValueType="FrontendNavigation">
+                    <Hash>
+                    </Hash>
+                </DefaultItem>
+            </Array>
+        </Value>
+    </Setting>
+
+</otrs_config>
