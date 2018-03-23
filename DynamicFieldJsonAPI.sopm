@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <otrs_package version="1.0">
-    <!-- GENERATED WITH OTRS::OPM::Maker::Command::sopm (1.36) -->
+    <!-- GENERATED WITH OTRS::OPM::Maker::Command::sopm (1.4) -->
     <Name>DynamicFieldJsonAPI</Name>
-    <Version>5.0.1</Version>
-    <Framework>5.0.x</Framework>
+    <Version>6.0.1</Version>
+    <Framework>6.0.x</Framework>
     <ModuleRequired Version="0.205">JSON::Path</ModuleRequired>
     <ModuleRequired Version="3.13">MIME::Base64</ModuleRequired>
     <Vendor>Perl-Services.de</Vendor>
@@ -17,7 +17,7 @@
         <File Permission="644" Location="Custom/Kernel/Output/HTML/Templates/Standard/AdminDynamicFieldJsonAPI.tt" />
         <File Permission="644" Location="Custom/Kernel/System/DynamicField/Driver/BaseJsonAPI.pm" />
         <File Permission="644" Location="Custom/Kernel/System/DynamicField/Driver/JsonAPI.pm" />
-        <File Permission="644" Location="Kernel/Config/Files/DynamicFieldJsonAPI.xml" />
+        <File Permission="644" Location="Kernel/Config/Files/XML/DynamicFieldJsonAPI.xml" />
         <File Permission="755" Location="bin/mock_json_api" />
         <File Permission="644" Location="doc/DynamicFieldJsonAPI.json" />
         <File Permission="644" Location="doc/en/DynamicFieldJsonAPI.pod" />
